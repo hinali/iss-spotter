@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/hinali/iss-spotter/issues"
   },
-  "homepage": "https://github.com/hinali/iss-spotter#readme"
+  "homepage": "https://github.com/hinali/iss-spotter#readme",
+  "dependencies": {
+    "request-promise-native": "^1.0.9"
+  }
 }

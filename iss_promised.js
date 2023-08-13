@@ -6,8 +6,13 @@ const fetchMyIP = () => {
 
 const fetchCoordsByIP = (body) => {
   const ip = JSON.parse(body).ip;
-  return request(`https://ipvigilante.com/${ip}`);
+  const requestOptions = {
+    uri: `https://ipvigilante.com/${ip}`,
+    rejectUnauthorized: false // Bypass SSL verification
+  };
+  return request(requestOptions);
 };
+
 
 const fetchISSFlyOverTimes = function(body) {
   const { latitude, longitude } = JSON.parse(body).data;
