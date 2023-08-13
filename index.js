@@ -1,20 +1,16 @@
-const { nextISSTimesForMyLocation } = require('./iss.js');
+const { nextISSTimesForMyLocation } = require('./iss');
 
-const printPassTimes = function(flyoverTimes) {
-  for (const pass of flyoverTimes.response) {
-    const formattedDateTime = new Date(0);
-    formattedDateTime.setUTCSeconds(pass.risetime);
-    const formattedDuration = pass.duration;
-
-    console.log(`Next pass at ${formattedDateTime.toLocaleString()} for ${formattedDuration} seconds.`);
-  }
+const printPassTimes = function(passTimes) {
+  passTimes.map(pass => {
+    const datetime = new Date(0);
+    datetime.setUTCSeconds(pass.risetime);
+    const duration = pass.duration;
+    console.log(`Next pass at ${datetime} for ${duration} seconds!`);
+  });
 };
-
-nextISSTimesForMyLocation((error, flyoverTimes) => {
+nextISSTimesForMyLocation((error, passTimes) => {
   if (error) {
-    console.log("An error occurred:", error);
-    return;
+    return console.log("It did not  working", error);
   }
-
-  printPassTimes(flyoverTimes);
+  printPassTimes(passTimes);
 });

@@ -1,73 +1,65 @@
 const request = require('request');
 
-const fetchMyIP = function(callback) {
-  const ipifyUrl = 'https://api.ipify.org?format=json';
-  request(ipifyUrl, (error, response, body) => {
-    if (error) {
-      callback(error, null);
-      return;
-    }
+const fetchMyIP = (callback) => {
+  request('https://api.ipify.org?format=json', (error, response, body) => {
+    if (error) return callback("Error retrieving IP address: " + error, null);
+
     if (response.statusCode !== 200) {
-      const msg = `${response.statusCode} was encountered when fetching IP. Response: ${body}`;
-      callback(Error(msg), null);
+      callback(Error(`Failed to fetch IP address. Status Code: ${response.statusCode}`), null);
       return;
     }
-    const ipAddress = JSON.parse(body).ip;
-    callback(null, ipAddress);
+
+    const myIP = JSON.parse(body).ip;
+    callback(null, myIP);
   });
 };
 
-const fetchCoordsByIP = function(ip, callback) {
-  const geoLocationUrl = `https://freegeoip.app/json/${ip}`;
-  request(geoLocationUrl, (error, response, body) => {
-    if (error) {
-      callback(error, null);
-      return;
-    }
+const fetchCoordsByIP = (ip, callback) => {
+  request(`https://ipvigilante.com/${ip}`, (error, response, body) => {
+    if (error) return callback("Error retrieving coordinates: " + error, null);
+
     if (response.statusCode !== 200) {
-      const msg = `${response.statusCode} was encountered when fetching IP. Response: ${body}`;
-      callback(Error(msg), null);
+      callback(Error(`Failed to fetch coordinates. Status Code: ${response.statusCode}`), null);
       return;
     }
-    const parsedBody = JSON.parse(body);
-    const latLong = { lat: parsedBody.latitude, long: parsedBody.longitude };
-    callback(null, latLong);
+
+    const { latitude, longitude } = JSON.parse(body).data;
+    const coords = {
+      lat: latitude,
+      lon: longitude
+    };
+    callback(null, coords);
   });
 };
 
-const fetchISSFlyOverTimes = function(coords, callback) {
-  const flyoverUrl = `http://api.open-notify.org/iss-pass.json?lat=${coords.lat}&lon=${coords.long}`;
-  request(flyoverUrl, (error, response, body) => {
-    if (error) {
-      callback(error, null);
-      return;
-    }
+const fetchISSFlyOverTimes = (coords, callback) => {
+  request(`http://api.open-notify.org/iss-pass.json?lat=${coords.lat}&lon=${coords.lon}`, (error, response, body) => {
+    if (error) return callback("Error retrieving flyover times: " + error, null);
+
     if (response.statusCode !== 200) {
-      const msg = `${response.statusCode} was encountered when fetching IP. Response: ${body}`;
-      callback(Error(msg), null);
+      callback(Error(`Failed to fetch flyover times. Status Code: ${response.statusCode}`), null);
       return;
     }
-    callback(null, JSON.parse(body));
+
+    const flyover = JSON.parse(body).response;
+    callback(null, flyover);
   });
 };
 
 const nextISSTimesForMyLocation = function(callback) {
   fetchMyIP((error, ip) => {
     if (error) {
-      callback(error, null);
-      return;
+      return callback(error, null);
     }
-    fetchCoordsByIP(ip, (error, latLong) => {
+    fetchCoordsByIP(ip, (error, coords) => {
       if (error) {
-        callback(error, null);
-        return;
+        return callback(error, null);
       }
-      fetchISSFlyOverTimes(latLong, (error, flyoverTimes) => {
+      fetchISSFlyOverTimes(coords, (error, flyover) => {
         if (error) {
-          callback(error, null);
-          return;
+          return callback(error, null);
         }
-        callback(null, flyoverTimes);
+        callback(null, flyover);
       });
     });
   });
